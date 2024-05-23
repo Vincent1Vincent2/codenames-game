@@ -1,4 +1,8 @@
-function spyInput() {
+interface PageProps {
+  key: string;
+}
+
+function spyInput({ key }: PageProps) {
   return (
     <div className="flex flex-col items-center w-full p-4">
       <input

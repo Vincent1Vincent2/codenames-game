@@ -45,7 +45,7 @@ export default function Dashboard({
                   <h1 className="text-lg font-bold	">BLUE TEAM</h1>
                   {users.map((user) =>
                     user.team === false && user.spyMaster === false ? (
-                      <p>{user.name}</p>
+                      <p key={user.id}>{user.name}</p>
                     ) : null
                   )}
                 </div>
@@ -53,7 +53,7 @@ export default function Dashboard({
                   <h1 className="text-lg font-bold">SPYMASTA</h1>
                   {users.map((user) =>
                     user.spyMaster === true && user.team === false ? (
-                      <p>{user.name}</p>
+                      <p key={user.id}>{user.name}</p>
                     ) : null
                   )}
                 </div>
@@ -61,7 +61,7 @@ export default function Dashboard({
               </div>
               {users.map((user) =>
                 user.spyMaster === true && user.team === false ? (
-                  <SpyInput />
+                  <SpyInput key={user.id} />
                 ) : null
               )}
             </div>
@@ -83,7 +83,7 @@ export default function Dashboard({
                       <h1 className="text-lg font-bold	">RED TEAM</h1>
                       {users.map((user) =>
                         user.team === true && user.spyMaster === false ? (
-                          <p>{user.name}</p>
+                          <p key={user.id}>{user.name}</p>
                         ) : null
                       )}
                     </div>
@@ -92,7 +92,7 @@ export default function Dashboard({
                       {users.map((user) =>
                         user.spyMaster === true && user.team === true ? (
                           <>
-                            <p>{user.name}</p>
+                            <p key={user.id}>{user.name}</p>
                           </>
                         ) : null
                       )}
@@ -105,7 +105,7 @@ export default function Dashboard({
               </div>
               {users.map((user) =>
                 user.spyMaster === true && user.team === true ? (
-                  <SpyInput />
+                  <SpyInput key={user.id} />
                 ) : null
               )}
             </div>
