@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/src/utils/prismaClient";
+import console from "console";
 
 export async function generateCards() {
   // Check if there are any active cards
@@ -96,11 +97,19 @@ export async function handleCardClick(cardId: string, userId: string | null) {
 
   const user = await db.user.findUnique({ where: { id: userId } });
   const card = await db.card.findUnique({ where: { id: cardId } });
+  console.log(user?.team);
+  console.log(card?.color);
 
-  if (card?.color && user?.team === true) {
+  if (card?.color === true && user?.team === true) {
+    await db.card.update({
+      where: { id: card.id },
+      data: { chosen: true },
+    });
+
+    //RED POINT
+  }
+  if (card?.color === false && user?.team === false) {
     await db.card.update({ where: { id: card.id }, data: { chosen: true } });
-  } else if (card?.color && user?.team === false) {
-    console.log(false);
-    await db.card.update({ where: { id: card.id }, data: { chosen: true } });
+    // BLUE POINT
   }
 }

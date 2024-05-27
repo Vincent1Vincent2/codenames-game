@@ -1,15 +1,14 @@
 "use client";
-
 import { Card } from "@prisma/client";
 import { useEffect, useState } from "react";
-import Cards from "../components/Cards";
+import { Dashboard } from "../components/Dashboard";
 import RealtimeListener from "../components/RealtimeListener";
-import Scoreboard from "../components/Scoreboard";
 import {
   generateCards,
   getGeneratedCards,
   resetActiveCards,
 } from "./actions/cardActions";
+import { getPoints } from "./actions/pointActions";
 import { clearUsers, getUsers, registerUser } from "./actions/userActions";
 
 interface UserData {
@@ -18,19 +17,28 @@ interface UserData {
   team: boolean;
   spyMaster: boolean;
   isAdmin: boolean;
+  isActive: boolean;
+}
+
+interface Points {
+  bluePoints: number | 0;
+  redPoints: number | 0;
 }
 
 export default function HomePage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
+  const [points, setPoints] = useState<Points>({ bluePoints: 0, redPoints: 0 });
   const [name, setName] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    async function loadUsers() {
+    async function loadStats() {
       const initialUsers = await getUsers();
       setUsers(initialUsers);
+
+      const points = await getPoints();
+      setPoints(points);
 
       const activeCards = await getGeneratedCards();
 
@@ -42,7 +50,6 @@ export default function HomePage() {
       }
     }
 
-    // Check for user data in localStorage
     const localUserData = localStorage.getItem("userData");
     if (localUserData) {
       const userData: UserData = JSON.parse(localUserData);
@@ -50,8 +57,8 @@ export default function HomePage() {
       setName(userData.name);
     }
 
-    loadUsers();
-  }, [cards.length]);
+    loadStats();
+  }, []);
 
   const handleUsersUpdated = (newUsers: UserData[] | UserData) => {
     const usersArray = Array.isArray(newUsers) ? newUsers : [newUsers];
@@ -63,23 +70,24 @@ export default function HomePage() {
   };
 
   const handleCardsUpdated = (newCards: Card[]) => {
-    const cardArray = Array.isArray(newCards) ? newCards : [newCards];
     setCards((prevCards) => {
       const updatedCardsMap = new Map(prevCards.map((card) => [card.id, card]));
-      cardArray.forEach((card) => updatedCardsMap.set(card.id, card));
+      newCards.forEach((card) => updatedCardsMap.set(card.id, card));
       return Array.from(updatedCardsMap.values());
     });
   };
 
-  const handleTeamPointsUpdated = (team: boolean, points: number) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => {
-        if (user.team === team) {
-          return { ...user, points };
-        }
-        return user;
-      })
-    );
+  const handlePointsUpdated = (updatedPoints: Points) => {
+    setPoints(updatedPoints);
+  };
+
+  const handleSpymasterUpdated = (userId: string, newUsers: UserData[]) => {
+    const usersArray = Array.isArray(newUsers) ? newUsers : [newUsers];
+    setUsers((prevUsers) => {
+      const updatedUsersMap = new Map(prevUsers.map((user) => [user.id, user]));
+      usersArray.forEach((user) => updatedUsersMap.set(userId, user));
+      return Array.from(updatedUsersMap.values());
+    });
   };
 
   const handleRegister = async () => {
@@ -92,8 +100,7 @@ export default function HomePage() {
     if (newUser) {
       setIsRegistered(true);
       handleUsersUpdated(newUser);
-      localStorage.setItem("userData", JSON.stringify(newUser)); // Update localStorage with new user data
-      setIsAdmin(newUser.isAdmin);
+      localStorage.setItem("userData", JSON.stringify(newUser));
     }
   };
 
@@ -109,8 +116,6 @@ export default function HomePage() {
     setUsers(updatedUsers);
   };
 
-  console.log(cards);
-
   return (
     <div>
       {!isRegistered ? (
@@ -125,26 +130,14 @@ export default function HomePage() {
         </div>
       ) : (
         <div>
-          <h1>Registered Users</h1>
-          <Scoreboard />
-          {users.map((user) => (
-            <div key={user.id}>
-              <p>
-                {user.name} - Team: {user.team ? "Red" : "Blue"} - SpyMaster:{" "}
-                {user.spyMaster ? "Yes" : "No"}
-                {user.isAdmin && (
-                  <button onClick={clearUser}>Clear All Users</button>
-                )}
-              </p>
-              <button onClick={clearCards}>Do it</button>
-            </div>
-          ))}
-          <Cards cards={cards} />
+          <Dashboard users={users} cards={cards} points={points} />
         </div>
       )}
       <RealtimeListener
         onUsersUpdated={handleUsersUpdated}
         onCardsCreate={handleCardsUpdated}
+        handlePointsUpdated={handlePointsUpdated}
+        setSpymaster={handleSpymasterUpdated}
       />
     </div>
   );

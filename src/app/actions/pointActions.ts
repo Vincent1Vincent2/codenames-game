@@ -1,5 +1,6 @@
 "use server";
 import { db } from "@/src/utils/prismaClient";
+import pusher from "@/src/utils/pusherServer";
 
 export async function getPoints() {
   const bluePoints = await db.card.findMany({
@@ -22,5 +23,6 @@ export async function getPoints() {
     redPoints: redPoints.length,
   };
 
+  await pusher.trigger("codename-game", "points-updated", points);
   return points;
 }
