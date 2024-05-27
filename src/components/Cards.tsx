@@ -1,64 +1,59 @@
-import { Substantiv } from "../../server/data";
-import { User } from "../../server/interfaces";
+"use client";
+import { Card } from "@prisma/client";
+import { UserData } from "next-auth/providers/42-school";
+import { useEffect, useState } from "react";
+import { handleCardClick } from "../app/actions/cardActions";
+import { getPoints } from "../app/actions/pointActions";
 
-interface Props {
-  cards: Substantiv[];
-  users: User[];
-  username: string;
-  handleCardClick: (ord: string) => void;
+interface PageProps {
+  cards: Card[];
 }
-export default function Card({
-  cards,
-  users,
-  handleCardClick,
-  username,
-}: Props) {
+
+interface Points {
+  bluePoints: number | 0;
+  redPoints: number | 0;
+}
+
+export default function Cards({ cards }: PageProps) {
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [points, setPoints] = useState<Points>();
+
+  useEffect(() => {
+    const localUserData = localStorage.getItem("userData");
+    if (localUserData) {
+      const parsedUserData: UserData = JSON.parse(localUserData);
+      setUserData(parsedUserData);
+    }
+  }, []);
+
+  async function cardClick(cardId: string, userId: string) {
+    await handleCardClick(cardId, userId);
+    const points = await getPoints();
+    setPoints(points);
+  }
+
   return (
-    <>
-      {users.map((user) => {
-        return user.spyMaster ? (
-          <div
-            className="grid grid-row-5 grid-cols-5 gap-2 place-items-center "
-            key={user.id}
+    <div>
+      {points?.bluePoints}
+      {points?.redPoints}
+      <div className="grid grid-cols-5 grid-rows-5 place-items-center gap-5">
+        {cards.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => userData && cardClick(c.id, userData.id.toString())}
           >
-            {cards.map((c, index) => (
-              <button
-                key={index}
-                className="shadow-md p-10 font-bold bg-blue-200 w-full transition-all hover:bg-blue-100 rounded cursor-pointer focus:ring-4 focus:ring-black"
-                onClick={() => handleCardClick(c.ord)}
-              >
-                <p
-                  className={
-                    c.death
-                      ? "text-gray-400"
-                      : c.color
-                      ? "text-red-400"
-                      : "text-blue-400"
-                  }
-                >
-                  {c.ord}
-                </p>
-                {c.death && <p className="text-black-500">Death Card</p>}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div
-            className="grid grid-row-5 grid-cols-5 gap-2 place-items-center"
-            key={user.id}
-          >
-            {cards.map((c, index) => (
-              <button
-                key={index}
-                className="shadow-md p-10 font-bold bg-blue-200 w-full transition-all hover:bg-blue-100 rounded cursor-pointer focus:ring-4 focus:ring-black"
-                onClick={() => handleCardClick(c.ord)}
-              >
-                <p className="text-black">{c.ord}</p>
-              </button>
-            ))}
-          </div>
-        );
-      })}
-    </>
+            <div className="w-2/3 h-32 bg-neutral-100 flex justify-center items-center">
+              {c.death ? (
+                <p className="text-gray-600">{c.word}</p>
+              ) : c.color ? (
+                <p className="text-blue-600">{c.word}</p>
+              ) : (
+                <p className="text-red-600">{c.word}</p>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

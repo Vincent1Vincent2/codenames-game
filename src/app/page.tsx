@@ -1,89 +1,151 @@
 "use client";
 
-import Dashboard from "@/components/Dashboard";
+import { Card } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { Substantiv } from "../../server/data";
-import { User } from "../../server/interfaces";
-import { socket } from "../socket";
+import Cards from "../components/Cards";
+import RealtimeListener from "../components/RealtimeListener";
+import Scoreboard from "../components/Scoreboard";
+import {
+  generateCards,
+  getGeneratedCards,
+  resetActiveCards,
+} from "./actions/cardActions";
+import { clearUsers, getUsers, registerUser } from "./actions/userActions";
 
-export default function Home() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [transport, setTransport] = useState("N/A");
-  const [users, setUsers] = useState<User[]>([]);
-  const [cards, setCards] = useState<Substantiv[]>([]);
-  const [username, setUsername] = useState<string>("");
+interface UserData {
+  id: string;
+  name: string;
+  team: boolean;
+  spyMaster: boolean;
+  isAdmin: boolean;
+}
+
+export default function HomePage() {
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [name, setName] = useState("");
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (socket.connected) {
-      onConnect();
+    async function loadUsers() {
+      const initialUsers = await getUsers();
+      setUsers(initialUsers);
+
+      const activeCards = await getGeneratedCards();
+
+      if (activeCards.length === 0) {
+        const generatedCards = await generateCards();
+        setCards(generatedCards);
+      } else {
+        setCards(activeCards);
+      }
     }
 
-    function onConnect() {
-      setIsConnected(true);
-      setTransport(socket.io.engine.transport.name);
-
-      socket.io.engine.on("upgrade", (transport) => {
-        setTransport(transport.name);
-      });
+    // Check for user data in localStorage
+    const localUserData = localStorage.getItem("userData");
+    if (localUserData) {
+      const userData: UserData = JSON.parse(localUserData);
+      setIsRegistered(true);
+      setName(userData.name);
     }
 
-    function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
-    }
+    loadUsers();
+  }, [cards.length]);
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("cards", generateCards);
-    // Listen for the "user" event
-    socket.on("user", (users: User[]) => {
-      setUsers(users);
-      console.log(users); // Ensure users array is received
+  const handleUsersUpdated = (newUsers: UserData[] | UserData) => {
+    const usersArray = Array.isArray(newUsers) ? newUsers : [newUsers];
+    setUsers((prevUsers) => {
+      const updatedUsersMap = new Map(prevUsers.map((user) => [user.id, user]));
+      usersArray.forEach((user) => updatedUsersMap.set(user.id, user));
+      return Array.from(updatedUsersMap.values());
     });
-
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("user");
-    };
-  }, []);
-
-  const generateCards = (cards: Substantiv[]) => {
-    setCards(cards);
   };
 
-  const handleRegister = () => {
-    const name = prompt("Enter your name");
-    if (name) {
-      socket.emit("setUser", name);
-      setUsername(name);
+  const handleCardsUpdated = (newCards: Card[]) => {
+    const cardArray = Array.isArray(newCards) ? newCards : [newCards];
+    setCards((prevCards) => {
+      const updatedCardsMap = new Map(prevCards.map((card) => [card.id, card]));
+      cardArray.forEach((card) => updatedCardsMap.set(card.id, card));
+      return Array.from(updatedCardsMap.values());
+    });
+  };
+
+  const handleTeamPointsUpdated = (team: boolean, points: number) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => {
+        if (user.team === team) {
+          return { ...user, points };
+        }
+        return user;
+      })
+    );
+  };
+
+  const handleRegister = async () => {
+    if (!name) {
+      alert("Please enter a name");
+      return;
+    }
+
+    const newUser = await registerUser(name);
+    if (newUser) {
+      setIsRegistered(true);
+      handleUsersUpdated(newUser);
+      localStorage.setItem("userData", JSON.stringify(newUser)); // Update localStorage with new user data
+      setIsAdmin(newUser.isAdmin);
     }
   };
 
-  const handleSetSpymaster = (user: User[]) => {
-    socket.emit("setSpymaster", user);
+  const clearUser = async () => {
+    await clearUsers();
+    const updatedUsers = await getUsers();
+    setUsers(updatedUsers);
   };
 
-  const handleCardClick = (ord: string) => {
-    socket.emit("selectWord", ord);
+  const clearCards = async () => {
+    await resetActiveCards();
+    const updatedUsers = await getUsers();
+    setUsers(updatedUsers);
   };
+
+  console.log(cards);
 
   return (
-    <div className="App h-screen w-screen bg-gradient-to-r from-blue-400 to-red-400">
-      <Dashboard
-        users={users}
-        username={username}
-        cards={cards}
-        handleCardClick={handleCardClick}
+    <div>
+      {!isRegistered ? (
+        <div>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your name"
+          />
+          <button onClick={handleRegister}>Register</button>
+        </div>
+      ) : (
+        <div>
+          <h1>Registered Users</h1>
+          <Scoreboard />
+          {users.map((user) => (
+            <div key={user.id}>
+              <p>
+                {user.name} - Team: {user.team ? "Red" : "Blue"} - SpyMaster:{" "}
+                {user.spyMaster ? "Yes" : "No"}
+                {user.isAdmin && (
+                  <button onClick={clearUser}>Clear All Users</button>
+                )}
+              </p>
+              <button onClick={clearCards}>Do it</button>
+            </div>
+          ))}
+          <Cards cards={cards} />
+        </div>
+      )}
+      <RealtimeListener
+        onUsersUpdated={handleUsersUpdated}
+        onCardsCreate={handleCardsUpdated}
       />
-      <div className="z-50 absolute bottom 0 text-white">
-        <button onClick={handleRegister}>Register</button>
-
-        <p>{isConnected ? "Connected" : "Not connected"}</p>
-        <button onClick={() => handleSetSpymaster(users)}>
-          Become Spymaster
-        </button>
-      </div>
     </div>
   );
 }

@@ -1,5 +1,3 @@
-import { Substantiv } from "./data";
-
 export type User = SocketData;
 
 export interface ServerToClientEvents {
