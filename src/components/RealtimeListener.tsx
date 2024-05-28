@@ -61,7 +61,7 @@ const RealtimeListener = ({
       channel.unbind("user-updated", handleUserUpdate);
       channel.unbind("card-updated", handleCardUpdate);
       channel.unbind("points-updated");
-      channel.unbind("user-updated");
+
       channel.unsubscribe();
     };
   }, [handlePointsUpdated, onUsersUpdated, onCardsCreate]);
