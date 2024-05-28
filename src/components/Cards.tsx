@@ -33,16 +33,17 @@ export default function Cards({ cards }: PageProps) {
   }
 
   return (
-    <div>
+    <div className="w-3/4">
       {points?.bluePoints}
       {points?.redPoints}
-      <div className="grid grid-cols-5 grid-rows-5 place-items-center gap-5">
+      <div className="grid grid-cols-5 grid-rows-5 place-items-center gap-5 mx-5 h-full">
         {cards.map((c) => (
           <button
+            className="w-full h-full bg-neutral-100 flex justify-center items-center"
             key={c.id}
             onClick={() => user && cardClick(c.id, user.id.toString())}
           >
-            <div className="w-2/3 h-32 bg-neutral-100 flex justify-center items-center">
+            <div className="w-2/3 h-24 bg-neutral-100 flex justify-center items-center">
               {c.death ? (
                 <p className="text-gray-600">{c.word}</p>
               ) : c.color ? (

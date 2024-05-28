@@ -1,5 +1,4 @@
 import { Card, User } from "@prisma/client";
-import Cards from "./Cards";
 import { Teams } from "./Teams";
 
 interface Points {
@@ -13,10 +12,5 @@ interface PageProps {
 }
 
 export function Dashboard({ cards, users, points }: PageProps) {
-  return (
-    <main>
-      <Teams users={users} points={points} />
-      <Cards cards={cards} />;
-    </main>
-  );
+  return <Teams users={users} points={points} cards={cards} />;
 }

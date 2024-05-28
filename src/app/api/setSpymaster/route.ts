@@ -1,6 +1,7 @@
 import { db } from "@/src/utils/prismaClient";
-import pusher from "@/src/utils/pusherServer";
+
 import { NextRequest, NextResponse } from "next/server";
+import pusher from "pusher-js/types/src/core/pusher";
 
 type Data = {
   message: string;

@@ -92,9 +92,9 @@ export default function HomePage() {
   };
 
   return (
-    <div>
+    <div className="h-full">
       {!isRegistered ? (
-        <div>
+        <div className="h-full">
           <input
             type="text"
             value={name}
@@ -104,9 +104,7 @@ export default function HomePage() {
           <button onClick={handleRegister}>Register</button>
         </div>
       ) : (
-        <div>
-          <Dashboard users={users} cards={cards} points={points} />
-        </div>
+        <Dashboard users={users} cards={cards} points={points} />
       )}
       <RealtimeListener
         onUsersUpdated={handleUsersUpdated}

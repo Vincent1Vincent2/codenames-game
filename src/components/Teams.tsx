@@ -1,8 +1,10 @@
 "use client";
 
+import { Card } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { User } from "../../server/interfaces";
 import { setSpymaster } from "../app/actions/userActions";
+import Cards from "./Cards";
 
 interface Points {
   bluePoints: number | 0;
@@ -12,9 +14,10 @@ interface Points {
 interface PageProps {
   users: User[];
   points: Points | undefined;
+  cards: Card[];
 }
 
-export function Teams({ users, points }: PageProps) {
+export function Teams({ users, points, cards }: PageProps) {
   const [user, setUser] = useState<User | undefined>(undefined);
 
   useEffect(() => {
@@ -38,70 +41,75 @@ export function Teams({ users, points }: PageProps) {
   };
 
   return (
-    <div>
-      <div>
+    <div className="flex justify-around m-10 text-white h-full">
+      <div className="flex flex-col items-center gap-5 bg-red-600 p-5 px-10 rounded-md ">
         <span>Points - {points?.redPoints}</span>
-        <div>
-          {users.map((u) =>
-            u.team === false && u.spyMaster === false ? (
-              <p className="text-red-600" key={u.id}>
-                {u.name}
-              </p>
-            ) : null
-          )}
-          {!isSpymasterOnTeam(false) && (
-            <button
-              onClick={() =>
-                becomeSpymaster(
-                  users.find((u) => u.team === false && u.spyMaster === false)
-                    ?.id
-                )
-              }
-            >
-              Become Spymaster
-            </button>
-          )}
+        <div className="flex gap-5">
+          <div>
+            <p>Red Team</p>
+            {users.map((u) =>
+              u.team === false && u.spyMaster === false ? (
+                <p key={u.id}>{u.name}</p>
+              ) : null
+            )}
+            {!isSpymasterOnTeam(false) && (
+              <button
+                onClick={() =>
+                  becomeSpymaster(
+                    users.find((u) => u.team === false && u.spyMaster === false)
+                      ?.id
+                  )
+                }
+              >
+                Become Spymaster
+              </button>
+            )}
+          </div>
+          <div>
+            <p>Spymaster</p>
+            {users.map((u) =>
+              u.team === false && u.spyMaster === true ? (
+                <p key={u.id}>{u.name}</p>
+              ) : null
+            )}
+          </div>
         </div>
-        <p>Spymaster</p>
-        {users.map((u) =>
-          u.team === false && u.spyMaster === true ? (
-            <p className="text-red-600" key={u.id}>
-              {u.name}
-            </p>
-          ) : null
-        )}
       </div>
-      <div>
+      <Cards cards={cards} />
+      <div className="flex flex-col items-center gap-5 bg-blue-600 p-5 px-10 rounded-md">
         <span>Points - {points?.bluePoints}</span>
-        <div>
-          {users.map((u) =>
-            u.team === true && u.spyMaster === false ? (
-              <p className="text-blue-600" key={u.id}>
-                {u.name}
-              </p>
-            ) : null
-          )}
-          {!isSpymasterOnTeam(true) && (
-            <button
-              onClick={() =>
-                becomeSpymaster(
-                  users.find((u) => u.team === true && u.spyMaster === false)
-                    ?.id
-                )
-              }
-            >
-              Become Spymaster
-            </button>
-          )}
+        <div className="flex gap-5">
+          <div>
+            <p>Blue Team</p>
+            {users.map((u) =>
+              u.team === true && u.spyMaster === false ? (
+                <p key={u.id}>{u.name}</p>
+              ) : null
+            )}
+
+            {!isSpymasterOnTeam(true) && (
+              <button
+                onClick={() =>
+                  becomeSpymaster(
+                    users.find((u) => u.team === true && u.spyMaster === false)
+                      ?.id
+                  )
+                }
+              >
+                Become Spymaster
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <p>Spymaster</p>
+            {users.map((u) =>
+              u.team === true && u.spyMaster === true ? (
+                <p key={u.id}>{u.name}</p>
+              ) : null
+            )}
+          </div>
         </div>
-        <p>Spymaster</p>
-        {users.map((u) =>
-          u.team === true && u.spyMaster === true ? (
-            <p className="text-blue-600" key={u.id}>
-              {u.name}
-            </p>
-          ) : null
-        )}
       </div>
     </div>
   );
