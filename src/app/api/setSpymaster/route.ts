@@ -18,6 +18,7 @@ export async function POST(req: NextRequest, res: NextResponse<Data>) {
   }
 
   await db.user.update({ where: { id: user.id }, data: { spyMaster: true } });
+  console.log(user);
 
   try {
     await pusher.trigger("codename-game", "user-updated", [user]);

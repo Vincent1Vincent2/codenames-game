@@ -20,14 +20,12 @@ interface Props {
   onUsersUpdated: (users: UserData[]) => void;
   onCardsCreate: (cards: Card[]) => void;
   handlePointsUpdated: (points: Points) => void;
-  setSpymaster: (userId: string, users: UserData[]) => void;
 }
 
 const RealtimeListener = ({
   onUsersUpdated,
   onCardsCreate,
   handlePointsUpdated,
-  setSpymaster,
 }: Props) => {
   useEffect(() => {
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
@@ -58,12 +56,6 @@ const RealtimeListener = ({
     channel.bind("points-updated", (updatedPoints: Points) => {
       handlePointsUpdated(updatedPoints);
     });
-    channel.bind(
-      "user-updated",
-      (data: { userId: string; users: UserData[] }) => {
-        setSpymaster(data.userId, data.users);
-      }
-    );
 
     return () => {
       channel.unbind("user-updated", handleUserUpdate);
@@ -72,7 +64,7 @@ const RealtimeListener = ({
       channel.unbind("user-updated");
       channel.unsubscribe();
     };
-  }, [handlePointsUpdated, onUsersUpdated, onCardsCreate, setSpymaster]);
+  }, [handlePointsUpdated, onUsersUpdated, onCardsCreate]);
 
   return null;
 };

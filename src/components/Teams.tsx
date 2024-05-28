@@ -1,4 +1,7 @@
-import { User } from "@prisma/client";
+"use client";
+
+import { useEffect, useState } from "react";
+import { User } from "../../server/interfaces";
 import { setSpymaster } from "../app/actions/userActions";
 
 interface Points {
@@ -12,11 +15,21 @@ interface PageProps {
 }
 
 export function Teams({ users, points }: PageProps) {
-  async function becomeSpymaster(userId: string | undefined, users: User[]) {
+  const [user, setUser] = useState<User | undefined>(undefined);
+
+  useEffect(() => {
+    const localUserData = localStorage.getItem("userData");
+    if (localUserData) {
+      const parsedUserData: User = JSON.parse(localUserData);
+      setUser(parsedUserData);
+    }
+  }, []);
+
+  async function becomeSpymaster(userId: string | undefined) {
     if (!userId) {
       console.error("No user id");
     } else {
-      await setSpymaster(userId, users);
+      await setSpymaster(user?.id);
     }
   }
 
@@ -41,8 +54,7 @@ export function Teams({ users, points }: PageProps) {
               onClick={() =>
                 becomeSpymaster(
                   users.find((u) => u.team === false && u.spyMaster === false)
-                    ?.id,
-                  users
+                    ?.id
                 )
               }
             >
@@ -74,8 +86,7 @@ export function Teams({ users, points }: PageProps) {
               onClick={() =>
                 becomeSpymaster(
                   users.find((u) => u.team === true && u.spyMaster === false)
-                    ?.id,
-                  users
+                    ?.id
                 )
               }
             >

@@ -3,13 +3,9 @@ import { Card } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { Dashboard } from "../components/Dashboard";
 import RealtimeListener from "../components/RealtimeListener";
-import {
-  generateCards,
-  getGeneratedCards,
-  resetActiveCards,
-} from "./actions/cardActions";
+import { generateCards, getGeneratedCards } from "./actions/cardActions";
 import { getPoints } from "./actions/pointActions";
-import { clearUsers, getUsers, registerUser } from "./actions/userActions";
+import { getUsers, registerUser } from "./actions/userActions";
 
 interface UserData {
   id: string;
@@ -81,15 +77,6 @@ export default function HomePage() {
     setPoints(updatedPoints);
   };
 
-  const handleSpymasterUpdated = (userId: string, newUsers: UserData[]) => {
-    const usersArray = Array.isArray(newUsers) ? newUsers : [newUsers];
-    setUsers((prevUsers) => {
-      const updatedUsersMap = new Map(prevUsers.map((user) => [user.id, user]));
-      usersArray.forEach((user) => updatedUsersMap.set(userId, user));
-      return Array.from(updatedUsersMap.values());
-    });
-  };
-
   const handleRegister = async () => {
     if (!name) {
       alert("Please enter a name");
@@ -102,18 +89,6 @@ export default function HomePage() {
       handleUsersUpdated(newUser);
       localStorage.setItem("userData", JSON.stringify(newUser));
     }
-  };
-
-  const clearUser = async () => {
-    await clearUsers();
-    const updatedUsers = await getUsers();
-    setUsers(updatedUsers);
-  };
-
-  const clearCards = async () => {
-    await resetActiveCards();
-    const updatedUsers = await getUsers();
-    setUsers(updatedUsers);
   };
 
   return (
@@ -137,7 +112,6 @@ export default function HomePage() {
         onUsersUpdated={handleUsersUpdated}
         onCardsCreate={handleCardsUpdated}
         handlePointsUpdated={handlePointsUpdated}
-        setSpymaster={handleSpymasterUpdated}
       />
     </div>
   );

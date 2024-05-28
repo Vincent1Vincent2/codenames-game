@@ -2,7 +2,6 @@
 
 import { db } from "@/src/utils/prismaClient";
 import pusher from "@/src/utils/pusherServer";
-import { User } from "next-auth";
 
 interface UserData {
   id: string;
@@ -73,8 +72,7 @@ export const clearUsers = async () => {
 };
 
 export async function setSpymaster(
-  userId: string,
-  users: User[]
+  userId: string | undefined
 ): Promise<UserData | null> {
   if (!userId) {
     console.error("Name is required");
@@ -94,7 +92,7 @@ export async function setSpymaster(
       const newUser: UserData = await response.json();
       console.log("Update successful:", newUser);
 
-      await pusher.trigger("codename-game", "user-updated", [newUser]); // Make sure to send an array if needed
+      await pusher.trigger("codename-game", "user-updated", [newUser]);
 
       return newUser;
     } else {
