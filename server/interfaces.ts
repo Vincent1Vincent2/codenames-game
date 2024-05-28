@@ -3,7 +3,6 @@ export type User = SocketData;
 export interface ServerToClientEvents {
   message: (message: string) => void;
   user: (user: User[]) => void;
-  cards: (cards: Substantiv[]) => void;
   points: (points: { redTeamPoints: number; blueTeamPoints: number }) => void;
 }
 
