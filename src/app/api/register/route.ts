@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-
 import pusher from "@/src/utils/pusherServer";
-
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../utils/prismaClient";
 
 interface UserRegistration {
@@ -15,11 +13,6 @@ interface UserData {
   team: boolean;
   spyMaster: boolean;
 }
-
-// File: pages/api/register.ts
-
-// This could be a database or any other data source in a real app
-let users: UserData[] = [];
 
 export async function POST(req: NextRequest) {
   try {
