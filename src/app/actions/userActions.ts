@@ -54,6 +54,11 @@ export async function getUsers() {
   return users;
 }
 
+export async function fetchUserById(userId: string) {
+  const user = await db.user.findUnique({ where: { id: userId } });
+  return user;
+}
+
 export const clearUsers = async () => {
   try {
     const response = await fetch(`${baseUrl}/api/cleanUsers`, {

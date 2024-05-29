@@ -41,8 +41,8 @@ export function Teams({ users, points, cards }: PageProps) {
   };
 
   return (
-    <div className="flex justify-around m-10 text-white h-full">
-      <div className="flex flex-col items-center gap-5 bg-red-600 p-5 px-10 rounded-md ">
+    <div className="flex justify-around m-10 text-white h-full items-center">
+      <div className="flex flex-col items-center gap-5  p-5 px-10 rounded-md h-96 redTeam">
         <span>Points - {points?.redPoints}</span>
         <div className="flex gap-5">
           <div>
@@ -76,7 +76,7 @@ export function Teams({ users, points, cards }: PageProps) {
         </div>
       </div>
       <Cards cards={cards} />
-      <div className="flex flex-col items-center gap-5 bg-blue-600 p-5 px-10 rounded-md">
+      <div className="flex flex-col items-center gap-5 bg-blue-600 p-5 px-10 rounded-md h-96 blueTeam">
         <span>Points - {points?.bluePoints}</span>
         <div className="flex gap-5">
           <div>
